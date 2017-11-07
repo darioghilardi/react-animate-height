@@ -43,6 +43,14 @@ function startAnimationHelper(callback) {
   });
 }
 
+const isNumber = (n) => !isNaN(parseFloat(n)) && isFinite(n);
+
+const isPercentage = (n) => (
+  typeof n === 'string' &&
+  n.search('%') === n.length - 1 &&
+  isNumber(n.substr(0, n.length - 1))
+);
+
 const AnimateHeight = class extends React.Component {
   constructor(props) {
     super(props);
@@ -50,15 +58,10 @@ const AnimateHeight = class extends React.Component {
     let height = 'auto';
     let overflow = 'visible';
 
-    if (this.isNumber(props.height)) {
-      height = props.height < 0 ? 0 : props.height;
+    if (isNumber(props.height)) {
+      height = (props.height < 0) ? 0 : props.height;
       overflow = 'hidden';
-    } else if (
-      // Percentage height
-      typeof props.height === 'string' &&
-      props.height.search('%') === props.height.length - 1 &&
-      this.isNumber(props.height.substr(0, props.height.length - 1))
-    ) {
+    } else if (isPercentage(props.height)) {
       height = props.height;
       overflow = 'hidden';
     }
@@ -78,7 +81,7 @@ const AnimateHeight = class extends React.Component {
   componentDidMount() {
     const { height } = this.state;
 
-    // Hide content if height is 0 (to prevent tabbing into it)
+    // Hide content if height is 0 (to prevent tabbing into it).
     // Check for contentElement is added cause this would fail in tests (react-test-renderer)
     // Read more here: https://github.com/Stanko/react-animate-height/issues/17
     if (this.contentElement && this.contentElement.style) {
@@ -110,16 +113,12 @@ const AnimateHeight = class extends React.Component {
       const isCurrentHeightAuto = this.state.height === 'auto';
 
 
-      if (this.isNumber(nextProps.height)) {
+      if (isNumber(nextProps.height)) {
         // If new height is a number
         newHeight = nextProps.height < 0 ? 0 : nextProps.height;
         timeoutState.height = newHeight;
-      } else if (
-        // Percentage height
-        typeof nextProps.height === 'string' &&
-        nextProps.height.search('%') === nextProps.height.length - 1 &&
-        this.isNumber(nextProps.height.substr(0, nextProps.height.length - 1))
-      ) {
+      } else if (isPercentage(nextProps.height)) {
+        // If new height is a percentage
         newHeight = nextProps.height;
         timeoutState.height = newHeight;
       } else {
@@ -218,10 +217,6 @@ const AnimateHeight = class extends React.Component {
     this.timeoutID = null;
     this.animationClassesTimeoutID = null;
     this.animationStateClasses = null;
-  }
-
-  isNumber(n) {
-    return !isNaN(parseFloat(n)) && isFinite(n);
   }
 
   runCallback(callback) {
